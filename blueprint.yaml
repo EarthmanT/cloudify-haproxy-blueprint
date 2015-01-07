@@ -1,0 +1,33 @@
+# DSL version, should appear in the main blueprint.yaml
+# and may appear in other imports. In such case, the versions must match
+tosca_definitions_version: cloudify_dsl_1_0
+
+imports:
+    - http://www.getcloudify.org/spec/cloudify/3.2m1/types.yaml
+    - types.yaml
+
+node_templates:
+
+  http_in:
+    type: haproxy.nodes.Proxy
+    properties:
+      default_backend: servers
+    relationships:
+      - target: server1
+        type: node_connected_to_backend
+        properties:
+          backend_address: { get_attribute: [ server1 : ip ] }
+          port: { get_attribute: [ server1 : port ] }
+          maxconn: 32
+      - target: server2
+        type: node_connected_to_backend
+        properties:
+          backend_address: { get_attribute: [ server1 : ip ] }
+          port: { get_attribute: [ server1 : port ] }
+          maxconn: 32
+
+  server1:
+    type: haproxy.nodes.BackEnd
+
+  server2:
+    type: haproxy.nodes.BackEnd
