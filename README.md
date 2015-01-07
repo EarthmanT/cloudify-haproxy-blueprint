@@ -1,5 +1,5 @@
 # cloudify-haproxy-blueprint
-A blueprint for HAProxy
+A Cloudify blueprint for HAProxy
 
 There is a types.yaml file that describes the haproxy types that you can instantiate in your blueprints.
 
