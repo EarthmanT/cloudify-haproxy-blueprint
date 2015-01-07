@@ -28,6 +28,8 @@ CONFIG_PATH = '/etc/haproxy/haproxy.cfg'
 
 def create_global_config(ctx):
 
+    ctx.logger.debug('Creating the global config section.')
+
     string = 'global\n'
     if ctx.node.properties['daemon']:
         string = '{0}\t{1}\n'.format(string, 'daemon')
@@ -37,7 +39,9 @@ def create_global_config(ctx):
     ctx.instance.runtime_properties['global_config'] = string
 
 
-def create_defaults(ctx):
+def create_defaults_config(ctx):
+
+    ctx.logger.debug('Creating the defaults config section.')
 
     string = 'defaults\n'
     string = '{0}\t{1} {2}\n'.format(
@@ -52,7 +56,9 @@ def create_defaults(ctx):
     ctx.instance.runtime_properties['default_config'] = string
 
 
-def create_frontend(ctx):
+def create_frontend_config(ctx):
+
+    ctx.logger.debug('Creating the frontend config section.')
 
     string = '{0} {1}\n'.format('frontend', ctx.instance.id)
     string = '{0}\t{1} *:{2}\n'.format(
@@ -63,7 +69,9 @@ def create_frontend(ctx):
     ctx.instance.runtime_properties['frontend_config'] = string
 
 
-def create_backend(ctx):
+def create_backend_config(ctx):
+
+    ctx.logger.debug('Creating the backend config section.')
 
     string = '{0} {1}\n'.format(
         'backend', ctx.node.properties['default_backend'])
@@ -77,7 +85,14 @@ def create_backend(ctx):
     ctx.instance.runtime_properties['backend_config'] = string
 
 
-def create_configuration(ctx):
+def create_config(ctx):
+
+    create_global_config(ctx=ctx)
+    create_defaults_config(ctx=ctx)
+    create_frontend_config(ctx=ctx)
+    create_backend_config(ctx=ctx)
+
+    ctx.logger.debug('Putting all of the config sections together.')
 
     ctx.instance.runtime_properties['configuration'] = '{0}{1}{2}{3}'.format(
         ctx.instance.runtime_properties['global_config'],
@@ -86,16 +101,22 @@ def create_configuration(ctx):
         ctx.instance.runtime_properties['backend_config'])
 
 
-@operation
-def configure(**kwargs):
+def write_config(ctx):
 
-    ctx.logger.info('Configuring HAProxy')
-
-    create_configuration(ctx=ctx)
+    ctx.logger.debug('Starting to write to {0}.'.format(CONFIG_PATH))
 
     with open(CONFIG_PATH, 'w') as file:
         file.write(ctx.instance.runtime_properties['configuration'])
         file.close()
+
+
+@operation
+def configure(**kwargs):
+
+    ctx.logger.info('Configuring HAProxy.')
+
+    create_config(ctx=ctx)
+    write_config(ctx=ctx)
 
     test_config = subprocess.Popen(
         ['/usr/sbin/haproxy', '-f', CONFIG_PATH, '-c'],
