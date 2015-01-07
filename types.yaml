@@ -1,0 +1,82 @@
+# DSL version, should appear in the main blueprint.yaml
+# and may appear in other imports. In such case, the versions must match
+tosca_definitions_version: cloudify_dsl_1_0
+
+imports:
+    - http://www.getcloudify.org/spec/cloudify/3.2m1/types.yaml
+
+node_types:
+
+  haproxy.nodes.Proxy:
+    derived_from: cloudify.nodes.Compute
+    properties:
+      port:
+        description: The port for HAProxy to listen.
+        type: integer
+        default: 80
+      default_backend:
+        description: >
+          The group name you choose for your backend targets.
+      daemon:
+        description: >
+          Whether to run HAProxy as a Daemon or not.
+        type: boolean
+        default: true
+      maxconn:
+        description: Max number of connections at a time.
+        type: integer
+        default: 256
+      mode:
+        description: >
+          The protocol that will act as a proxy for.
+        type: string
+        default: http
+      timeout_connect:
+        description: >
+          Set the maximum time to wait for a connection attempt to a 
+          server to succeed.
+        type: integer
+        default: 5000
+      timeout_client:
+        description: Set the maximum inactivity time on the client side.
+        type: integer
+        default: 50000
+      timeout_server:
+        description: Set the maximum inactivity time on the server side.
+        type: integer
+        default: 50000
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: scripts/install-ubuntu.sh
+        configure: scripts/configure.py
+        start: scripts/start-ubuntu.sh
+        stop: scripts/stop-ubuntu.sh
+
+  haproxy.nodes.BackEnd:
+    derived_from: cloudify.nodes.Compute
+    properties:
+      address:
+        description: >
+          The internal IP address that you want the proxy to hit.
+        type: string
+        default: 127.0.0.1
+      port:
+        description: The port your backend app listens on.
+        type: integer
+        default: 8000
+      maxconn:
+        description: >
+          The maximum per-process number of concurrent connections.
+        default: 32
+
+relationships:
+  node_connected_to_backend:
+    derived_from: cloudify.relationships.connected_to
+    properties:
+      backend_address:
+        description: >
+          The internal address of the haproxy.nodes.backend template.
+      port:
+        description: The port of that backend template.
+      maxconn:
+        description: That backend template's maxconn value.
