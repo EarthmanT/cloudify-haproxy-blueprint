@@ -1,0 +1,50 @@
+########
+# Copyright (c) 2014 GigaSpaces Technologies Ltd. All rights reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    * See the License for the specific language governing permissions and
+#    * limitations under the License.
+
+
+import os
+import unittest
+
+from cloudify.workflows import local
+
+
+class TestPlugin(unittest.TestCase):
+
+    def setUp(self):
+        # build blueprint path
+        blueprint_path = os.path.join(os.path.dirname(__file__),
+                                      '..', 'blueprint.yaml')
+
+        # setup local workflow execution environment
+        self.env = local.init_env(blueprint_path,
+                                  name=self.test_install_workflow)
+
+    def test_install_workflow(self):
+
+        self.env.execute('install', task_retries=0)
+
+        test_create_global = 'global\n\tdaemon\tdaemon 256\n'
+
+        test_create_defaults = ('defaults\n\tmode http\n\ttimeout '
+                                'connect 5000ms\n\ttimeout client '
+                                '50000ms\n\ttimeout server 50000ms\n\n')
+
+        instance = self.env.storage.get_node_instances()[0]
+
+        self.assertEqual(instance.runtime_properties['global_config'],
+                         test_create_global)
+
+        self.assertEqual(instance.runtime_properties['default_config'],
+                         test_create_defaults)
