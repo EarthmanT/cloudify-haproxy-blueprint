@@ -22,23 +22,26 @@ from cloudify import ctx
 from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
 
+# Constants
+CONFIG_PATH = '/etc/haproxy/haproxy.cfg'
+
 
 def create_global_config(ctx):
 
     string = 'global\n'
     if ctx.node.properties['daemon']:
-        string = '{0}\t{1}'.format(string, 'daemon')
+        string = '{0}\t{1}\n'.format(string, 'daemon')
     string = '{0}\t{1} {2}'.format(
-        string, 'daemon', ctx.node.properties['maxconn'])
+        string, 'maxconn', ctx.node.properties['maxconn'])
 
-    return string
+    ctx.instance.runtime_properties['global_config'] = string
 
 
 def create_defaults(ctx):
 
     string = 'defaults\n'
     string = '{0}\t{1} {2}\n'.format(
-        string, 'mode', ctx.node.properties['http'])
+        string, 'mode', ctx.node.properties['mode'])
     string = '{0}\t{1} {2} {3}ms\n'.format(
         string, 'timeout', 'connect', ctx.node.properties['timeout_connect'])
     string = '{0}\t{1} {2} {3}ms\n'.format(
@@ -46,7 +49,7 @@ def create_defaults(ctx):
     string = '{0}\t{1} {2} {3}ms\n'.format(
         string, 'timeout', 'server', ctx.node.properties['timeout_server'])
 
-    return '{0}\n'.format(string)
+    ctx.instance.runtime_properties['default_config'] = string
 
 
 def create_frontend(ctx):
@@ -57,7 +60,7 @@ def create_frontend(ctx):
     string = '{0}\t{1} {2}\n'.format(
         string, 'default_backend', ctx.node.properties['default_backend'])
 
-    return '{0}\n'.format(string)
+    ctx.instance.runtime_properties['frontend_config'] = string
 
 
 def create_backend(ctx):
@@ -71,28 +74,31 @@ def create_backend(ctx):
             str(ctx.source.node.properties['port']), 'maxconn',
             ctx.source.node.properties['maxconn'], str(32))
 
-    return '{0}\n'.format(string)
+    ctx.instance.runtime_properties['backend_config'] = string
+
+
+def create_configuration(ctx):
+
+    ctx.instance.runtime_properties['configuration'] = '{0}{1}{2}{3}'.format(
+        ctx.instance.runtime_properties['global_config'],
+        ctx.instance.runtime_properties['default_config'],
+        ctx.instance.runtime_properties['frontend_config'],
+        ctx.instance.runtime_properties['backend_config'])
 
 
 @operation
 def configure(**kwargs):
 
-    config_path = '/etc/haproxy/haproxy.cfg'
-
     ctx.logger.info('Configuring HAProxy')
 
-    blob = '{0}{1}{2}{3}'.format(
-        create_global_config(ctx=ctx),
-        create_defaults(ctx=ctx),
-        create_frontend(ctx=ctx),
-        create_backend(ctx=ctx))
+    create_configuration(ctx=ctx)
 
-    with open(config_path, 'w') as file:
-        file.write(blob)
+    with open(CONFIG_PATH, 'w') as file:
+        file.write(ctx.instance.runtime_properties['configuration'])
         file.close()
 
     test_config = subprocess.Popen(
-        ['/usr/sbin/haproxy', '-f', config_path, '-c'],
+        ['/usr/sbin/haproxy', '-f', CONFIG_PATH, '-c'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     output = test_config.communicate()
