@@ -19,7 +19,6 @@ import subprocess
 
 # Cloudify Imports
 from cloudify import ctx
-from cloudify.decorators import operation
 from cloudify.exceptions import NonRecoverableError
 
 # Constants
@@ -75,12 +74,13 @@ def create_backend_config(ctx):
 
     string = '{0} {1}\n'.format(
         'backend', ctx.node.properties['default_backend'])
-    for relationship in ctx.node.relationships:
-        string = '{0}\t{1} {2} {3}:{4} {5} {6}\n'.format(
-            string, 'server', ctx.source.node.id,
-            ctx.source.node.properties['backend_address'],
-            str(ctx.source.node.properties['port']), 'maxconn',
-            ctx.source.node.properties['maxconn'], str(32))
+    for relationship in ctx.instance.relationships:
+        if relationship.type == 'node_connected_to_backend':
+            string = '{0}\t{1} {2} {3}:{4} {5} {6}\n'.format(
+                string, 'server', ctx.source.node.id,
+                relationship.target.node.properties['backend_address'],
+                str(relationship.target.node.properties['port']), 'maxconn',
+                relationship.target.node.properties['maxconn'], str(32))
 
     ctx.instance.runtime_properties['backend_config'] = string
 
@@ -105,28 +105,28 @@ def write_config(ctx):
 
     ctx.logger.debug('Starting to write to {0}.'.format(CONFIG_PATH))
 
-    with open(CONFIG_PATH, 'w') as file:
-        file.write(ctx.instance.runtime_properties['configuration'])
-        file.close()
+    try:
+        with open(CONFIG_PATH, 'w') as file:
+            file.write(ctx.instance.runtime_properties['configuration'])
+            file.close()
+    except IOError:
+        raise NonRecoverableError(
+            'Permission denied: {0}.'.format(CONFIG_PATH))
 
+ctx.logger.info('Configuring HAProxy.')
 
-@operation
-def configure(**kwargs):
+create_config(ctx=ctx)
+write_config(ctx=ctx)
 
-    ctx.logger.info('Configuring HAProxy.')
+test_config = subprocess.Popen(
+    ['/usr/sbin/haproxy', '-f', CONFIG_PATH, '-c'],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE)
+output = test_config.communicate()
 
-    create_config(ctx=ctx)
-    write_config(ctx=ctx)
+ctx.logger.debug('Config Validation: {0}'.format(output))
 
-    test_config = subprocess.Popen(
-        ['/usr/sbin/haproxy', '-f', CONFIG_PATH, '-c'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-    output = test_config.communicate()
-
-    ctx.logger.debug('Config Validation: {0}'.format(output))
-
-    if test_config.returncode != 0:
-        raise NonRecoverableError('Failed to Configure')
-    else:
-        ctx.logger.info('Configure was successful.')
+if test_config.returncode != 0:
+    raise NonRecoverableError('Failed to Configure')
+else:
+    ctx.logger.info('Configure was successful.')
