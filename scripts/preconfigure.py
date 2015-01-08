@@ -29,10 +29,10 @@ ctx.logger.info('Configuring HAProxy.')
 
 ctx.logger.debug('Creating the global config section.')
 
-global_config = ('global\n'
-                 '\t{1}\n'
-                 '\t{2} {3}').format('daemon', 'maxconn',
-                                     ctx.source.node.properties['maxconn'])
+global_config = 'global\n'\
+                '\t{0}\n'\
+                '\t{1} {2}'.format('daemon', 'maxconn',
+                                   ctx.source.node.properties['maxconn'])
 
 ctx.logger.debug('Creating the defaults config section.')
 
