@@ -8,7 +8,7 @@ imports:
 node_types:
 
   haproxy.nodes.Proxy:
-    derived_from: cloudify.nodes.Compute
+    derived_from: cloudify.nodes.ApplicationServer
     properties:
       port:
         description: The port for HAProxy to listen.
@@ -53,7 +53,7 @@ node_types:
         stop: scripts/stop-ubuntu.sh
 
   haproxy.nodes.BackEnd:
-    derived_from: cloudify.nodes.Compute
+    derived_from: cloudify.nodes.ApplicationServer
     properties:
       address:
         description: >
@@ -63,11 +63,6 @@ node_types:
       port:
         description: The port your backend app listens on.
         type: integer
-        default: 8000
-      maxconn:
-        description: >
-          The maximum per-process number of concurrent connections.
-        default: 32
 
 relationships:
   node_connected_to_backend:
