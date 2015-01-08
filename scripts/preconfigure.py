@@ -36,27 +36,28 @@ global_config = 'global\n'\
 
 ctx.logger.debug('Creating the defaults config section.')
 
-default_config = ('defaults\n'
-                  '\tmode {0}\n'
-                  '\ttimeout connect {1}\n'
-                  '\ttimeout client {2}\n'
-                  '\ttimeout server {3}\n').format(
-    ctx.source.node.properties['mode'],
-    ctx.source.node.properties['timeout_connect'],
-    ctx.source.node.properties['timeout_client'],
-    ctx.source.node.properties['timeout_server'])
+default_config = 'defaults\n'\
+                 '\tmode {0}\n'\
+                 '\ttimeout connect {1}\n'\
+                 '\ttimeout client {2}\n'\
+                 '\ttimeout server {3}\n'.format(
+                     ctx.source.node.properties['mode'],
+                     ctx.source.node.properties['timeout_connect'],
+                     ctx.source.node.properties['timeout_client'],
+                     ctx.source.node.properties['timeout_server'])
 
 ctx.logger.debug('Creating the frontend config section.')
 
-frontend_config = ('frontend {1}\n'
-                   '\tbind *:{3}\n'
-                   '\tdefault_backend {4}\n').format(
-    ctx.source.instance.id, str(ctx.source.node.properties['port']),
-    ctx.source.node.properties['default_backend'])
+frontend_config = 'frontend {0}\n'\
+                  '\tbind *:{1}\n'\
+                  '\tdefault_backend {2}\n'.format(
+                      ctx.source.instance.id,
+                      str(ctx.source.node.properties['port']),
+                      ctx.source.node.properties['default_backend'])
 
 ctx.logger.debug('Creating the backend config section.')
 
-backend_config = 'backend {1}\n'.format(
+backend_config = 'backend {0}\n'.format(
     ctx.source.node.properties['default_backend'])
 
 for relationship in ctx.instance.relationships:
