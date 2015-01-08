@@ -3,8 +3,8 @@
 tosca_definitions_version: cloudify_dsl_1_0
 
 imports:
-  - http://www.getcloudify.org/spec/cloudify/3.2m1/types.yaml
-  - http://www.getcloudify.org/spec/openstack-plugin/1.2m2/plugin.yaml
+  - http://www.getcloudify.org/spec/cloudify/3.1/types.yaml
+  - http://www.getcloudify.org/spec/openstack-plugin/1.1/plugin.yaml
   - types/haproxy.yaml
 
 inputs:
@@ -115,9 +115,9 @@ node_templates:
         type: cloudify.relationships.contained_in
     interfaces:
       cloudify.interfaces.lifecycle:
-        configure: cloudify-hello-world-example/hello-world/scripts/configure.sh
-        start: cloudify-hello-world-example/hello-world/scripts/start.sh
-        stop: cloudify-hello-world-example/hello-world/scripts/stop.sh
+        configure: hello-world/scripts/configure.sh
+        start: hello-world/scripts/start.sh
+        stop: hello-world/scripts/stop.sh
 
   server2:
     type: haproxy.nodes.BackEnd
@@ -129,6 +129,6 @@ node_templates:
         type: cloudify.relationships.contained_in
     interfaces:
       cloudify.interfaces.lifecycle:
-        configure: cloudify-hello-world-example/hello-world/scripts/configure.sh
-        start: cloudify-hello-world-example/hello-world/scripts/start.sh
-        stop: cloudify-hello-world-example/hello-world/scripts/stop.sh
+        configure: hello-world/scripts/configure.sh
+        start: hello-world/scripts/start.sh
+        stop: hello-world/scripts/stop.sh
