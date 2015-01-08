@@ -3,7 +3,7 @@
 tosca_definitions_version: cloudify_dsl_1_0
 
 imports:
-    - http://www.getcloudify.org/spec/cloudify/3.1/types.yaml
+  - http://www.getcloudify.org/spec/cloudify/3.1/types.yaml
 
 node_types:
 
@@ -17,11 +17,6 @@ node_types:
       default_backend:
         description: >
           The group name you choose for your backend targets.
-      daemon:
-        description: >
-          Whether to run HAProxy as a Daemon or not.
-        type: boolean
-        default: true
       maxconn:
         description: Max number of connections at a time.
         type: integer
@@ -48,18 +43,12 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: scripts/install-ubuntu.sh
-        configure: scripts/configure.py
         start: scripts/start-ubuntu.sh
         stop: scripts/stop-ubuntu.sh
 
   haproxy.nodes.BackEnd:
     derived_from: cloudify.nodes.ApplicationServer
     properties:
-      address:
-        description: >
-          The internal IP address that you want the proxy to hit.
-        type: string
-        default: 127.0.0.1
       port:
         description: The port your backend app listens on.
         type: integer
@@ -67,11 +56,15 @@ node_types:
 relationships:
   node_connected_to_backend:
     derived_from: cloudify.relationships.connected_to
-    properties:
-      backend_address:
-        description: >
-          The internal address of the haproxy.nodes.backend template.
-      port:
-        description: The port of that backend template.
-      maxconn:
-        description: That backend template's maxconn value.
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        preconfigure:
+          implementation: scripts/preconfigure.py
+          inputs:
+            backend_address:
+              description: >
+                The internal address of the haproxy.nodes.backend template.
+            port:
+              description: The port of that backend template.
+            maxconn:
+              description: That backend template's maxconn value.
