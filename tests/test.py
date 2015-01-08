@@ -26,10 +26,23 @@ class TestPlugin(unittest.TestCase):
         # build blueprint path
         blueprint_path = os.path.join(os.path.dirname(__file__),
                                       '..', 'blueprint.yaml')
+        # inject input from test
+        inputs = {
+            'agent_public_key_name': 'trammell-agent-kp',
+            'agent_user': 'ubuntu',
+            'frontend_image_name': 'Ubuntu Server 12.04.2 LTS'
+                                   ' (amd64 20130318) - Partner Image',
+            'frontend_flavor_name': 'standard.medium',
+            'backend_image_name': 'Ubuntu Server 12.04.2 LTS '
+                                  '(amd64 20130318) - Partner Image',
+            'backend_flavor_name': 'standard.medium',
+            'backend_app_port': 8000
+        }
 
         # setup local workflow execution environment
         self.env = local.init_env(blueprint_path,
-                                  name=self.test_install_workflow)
+                                  name=self.test_install_workflow,
+                                  inputs=inputs)
 
     def test_install_workflow(self):
 
