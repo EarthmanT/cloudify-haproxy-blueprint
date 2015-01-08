@@ -64,7 +64,10 @@ relationships:
             backend_address:
               description: >
                 The internal address of the haproxy.nodes.backend template.
+              default: { get_attrbiute: [ TARGET, ip ] }
             port:
               description: The port of that backend template.
+              default: { get_property: [ TARGET, port ] }
             maxconn:
               description: That backend template's maxconn value.
+              default: 32

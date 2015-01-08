@@ -66,22 +66,8 @@ node_templates:
         type: cloudify.relationships.contained_in
       - target: backend1
         type: node_connected_to_backend
-        target_interfaces:
-          cloudify.interfaces.relationship_lifecycle:
-            preconfigure:
-              inputs:
-                backend_address: { get_attribute: [ vm_backend1, ip ] }
-                port: { get_property: [ backend1,  port ] }
-                maxconn: 32
       - target: backend2
         type: node_connected_to_backend
-        target_interfaces:
-          cloudify.interfaces.relationship_lifecycle:
-            preconfigure:
-              inputs:
-                backend_address: { get_attribute: [ vm_backend2, ip ] }
-                port: { get_property: [ backend2,  port ] }
-                maxconn: 32
 
   haproxy_backend_security_group:
     type: cloudify.openstack.nodes.SecurityGroup
