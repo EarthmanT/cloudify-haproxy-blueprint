@@ -1,0 +1,9 @@
+{
+    "agent_public_key_name": "trammell-agent-kp",
+    "agent_user": "ubuntu",
+    "frontend_image_name": "Ubuntu Server 12.04.2 LTS (amd64 20130318) - Partner Image",
+    "frontend_flavor_name": "standard.medium",
+    "backend_image_name": "Ubuntu Server 12.04.2 LTS (amd64 20130318) - Partner Image",
+    "backend_flavor_name": "standard.medium",
+    "backend_app_port": 8000
+}
