@@ -38,15 +38,6 @@ node_templates:
         - remote_ip_prefix: 0.0.0.0/0
           port: { get_property: [ http_in, port ] }
 
-  haproxy_backend_security_group:
-    type: cloudify.openstack.nodes.SecurityGroup
-    properties:
-      security_group:
-        name: haproxy_backend_security_group
-      rules:
-        - remote_ip_prefix: 0.0.0.0/0
-          port: { get_input: backend_app_port }
-
   vm_frontend:
     type: cloudify.openstack.nodes.Server
     properties:
@@ -61,57 +52,64 @@ node_templates:
       - type: cloudify.openstack.server_connected_to_security_group
         target: haproxy_frontend_security_group
 
-  vm_server1:
-    type: cloudify.openstack.nodes.Server
-    properties:
-      cloudify_agent:
-        user: { get_input: agent_user }
-      server:
-        image_name: { get_input: backend_image_name }
-        flavor_name: { get_input: backend_flavor_name }
-    relationships:
-      - type: cloudify.openstack.server_connected_to_security_group
-        target: haproxy_backend_security_group
-
-  vm_server2:
-    type: cloudify.openstack.nodes.Server
-    properties:
-      cloudify_agent:
-        user: { get_input: agent_user }
-      server:
-        image_name: { get_input: backend_image_name }
-        flavor_name: { get_input: backend_flavor_name }
-    relationships:
-      - type: cloudify.openstack.server_connected_to_security_group
-        target: haproxy_backend_security_group
-
   http_in:
     type: haproxy.nodes.Proxy
     properties:
       default_backend: servers
+      maxconn: 256
+      mode: http
+      timeout_connect: 5000
+      timeout_client: 50000
+      timeout_server: 50000
     relationships:
       - target: vm_frontend
         type: cloudify.relationships.contained_in
-      - target: server1
+      - target: backend1
         type: node_connected_to_backend
-        properties:
-          backend_address: { get_attribute: [ server1, ip ] }
-          port: { get_property: [ server1,  port ] }
-          maxconn: 32
-      - target: server2
+        target_interfaces:
+          cloudify.interfaces.relationship_lifecycle:
+            preconfigure:
+              inputs:
+                backend_address: { get_attribute: [ vm_backend1, ip ] }
+                port: { get_property: [ backend1,  port ] }
+                maxconn: 32
+      - target: backend2
         type: node_connected_to_backend
-        properties:
-          backend_address: { get_attribute: [ server2, ip ] }
-          port: { get_property: [ server1,  port ] }
-          maxconn: 32
+        target_interfaces:
+          cloudify.interfaces.relationship_lifecycle:
+            preconfigure:
+              inputs:
+                backend_address: { get_attribute: [ vm_backend2, ip ] }
+                port: { get_property: [ backend2,  port ] }
+                maxconn: 32
 
-  server1:
+  haproxy_backend_security_group:
+    type: cloudify.openstack.nodes.SecurityGroup
+    properties:
+      security_group:
+        name: haproxy_backend_security_group
+      rules:
+        - remote_ip_prefix: 0.0.0.0/0
+          port: { get_input: backend_app_port }
+
+  vm_backend1:
+    type: cloudify.openstack.nodes.Server
+    properties:
+      cloudify_agent:
+        user: { get_input: agent_user }
+      server:
+        image_name: { get_input: backend_image_name }
+        flavor_name: { get_input: backend_flavor_name }
+    relationships:
+      - type: cloudify.openstack.server_connected_to_security_group
+        target: haproxy_backend_security_group
+
+  backend1:
     type: haproxy.nodes.BackEnd
     properties:
-      address: { get_attribute: [ vm_server1, ip] }
       port: { get_input: backend_app_port }
     relationships:
-      - target: vm_server1
+      - target: vm_backend1
         type: cloudify.relationships.contained_in
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -119,16 +117,28 @@ node_templates:
         start: hello-world/scripts/start.sh
         stop: hello-world/scripts/stop.sh
 
-  server2:
+  vm_backend2:
+    type: cloudify.openstack.nodes.Server
+    properties:
+      cloudify_agent:
+        user: { get_input: agent_user }
+      server:
+        image_name: { get_input: backend_image_name }
+        flavor_name: { get_input: backend_flavor_name }
+    relationships:
+      - type: cloudify.openstack.server_connected_to_security_group
+        target: haproxy_backend_security_group
+
+  backend2:
     type: haproxy.nodes.BackEnd
     properties:
-      address: { get_attribute: [ vm_server2, ip] }
       port: { get_input: backend_app_port }
     relationships:
-      - target: vm_server2
+      - target: vm_backend2
         type: cloudify.relationships.contained_in
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: hello-world/scripts/configure.sh
         start: hello-world/scripts/start.sh
         stop: hello-world/scripts/stop.sh
+
