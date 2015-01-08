@@ -119,7 +119,7 @@ create_config(ctx=ctx)
 write_config(ctx=ctx)
 
 test_config = subprocess.Popen(
-    ['/usr/sbin/haproxy', '-f', CONFIG_PATH, '-c'],
+    ['sudo', '/usr/sbin/haproxy', '-f', CONFIG_PATH, '-c'],
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE)
 output = test_config.communicate()
