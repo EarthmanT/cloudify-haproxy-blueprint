@@ -64,10 +64,6 @@ node_templates:
     relationships:
       - target: vm_frontend
         type: cloudify.relationships.contained_in
-      - target: backend1
-        type: node_connected_to_backend
-      - target: backend2
-        type: node_connected_to_backend
 
   haproxy_backend_security_group:
     type: cloudify.openstack.nodes.SecurityGroup
@@ -97,6 +93,8 @@ node_templates:
     relationships:
       - target: vm_backend1
         type: cloudify.relationships.contained_in
+      - target: http_in
+        type: node_connected_to_backend
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: hello-world/scripts/configure.sh
@@ -122,6 +120,8 @@ node_templates:
     relationships:
       - target: vm_backend2
         type: cloudify.relationships.contained_in
+      - target: http_in
+        type: node_connected_to_backend
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: hello-world/scripts/configure.sh
