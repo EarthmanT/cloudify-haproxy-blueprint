@@ -17,7 +17,7 @@ node_types:
       default_backend:
         description: >
           The group name you choose for your backend targets.
-      maxconn:
+      global_maxconn:
         description: Max number of connections at a time.
         type: integer
         default: 256
@@ -43,6 +43,7 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create: scripts/install-ubuntu.sh
+        configure: scripts/configure.py
         start: scripts/start-ubuntu.sh
         stop: scripts/stop-ubuntu.sh
 
@@ -52,9 +53,11 @@ node_types:
       port:
         description: The port your backend app listens on.
         type: integer
+      maxconn:
+        description: Sets the maximum per-process number of concurrent connections.
 
 relationships:
-  node_connected_to_backend:
+  node_connected_to_frontend:
     derived_from: cloudify.relationships.connected_to
     target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
@@ -64,10 +67,10 @@ relationships:
             backend_address:
               description: >
                 The internal address of the haproxy.nodes.backend template.
-              default: { get_attrbiute: [ TARGET, ip ] }
+              default: { get_attrbiute: [ SOURCE, ip ] }
             port:
               description: The port of that backend template.
-              default: { get_property: [ TARGET, port ] }
+              default: { get_property: [ SOURCE, port ] }
             maxconn:
               description: That backend template's maxconn value.
-              default: 32
+              default: { get_property: [ SOURCE, maxconn ]}
