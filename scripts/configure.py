@@ -24,8 +24,12 @@ from cloudify.exceptions import NonRecoverableError
 
 # Constants
 CONFIG_PATH = '/etc/haproxy/haproxy.cfg'
-TEMPLATE_FOLDER = 'templates'
+TEMPLATE_FOLDER = 'scripts/templates'
 TEMPLATE_FILE_NAME = 'haproxy.cfg.template'
+
+ctx.logger.debug('Pulling the config template into the temp directory.')
+ctx.download_resource('haproxy.cfg.template',
+                      **{'target_path': '/tmp/haproxy.cfg.template'})
 
 env = Environment(loader=FileSystemLoader(TEMPLATE_FOLDER))
 template = env.get_template(TEMPLATE_FILE_NAME)
@@ -35,20 +39,20 @@ ctx.logger.debut('Building a dict object that will contain variables '
                  'to write to the Jinja2 template.')
 
 config = dict()
-config['global_maxconn'] = ctx.instance.properties['global_maxconn']
-config['mode'] = ctx.instance.properties['mode']
-config['timeout_connect'] = ctx.instance.properties['timeout_connect']
-config['timeout_client'] = ctx.instance.properties['timeout_client']
-config['timeout_server'] = ctx.instance.properties['timeout_server']
+config['global_maxconn'] = ctx.node.properties['global_maxconn']
+config['mode'] = ctx.node.properties['mode']
+config['timeout_connect'] = ctx.node.properties['timeout_connect']
+config['timeout_client'] = ctx.node.properties['timeout_client']
+config['timeout_server'] = ctx.node.properties['timeout_server']
 config['frontend_id'] = ctx.instance.id
-config['frontend_port'] = ctx.instance.properties['port']
-config['default_backend'] = ctx.instance.properties['default_backend']
-config['backends'] = ctx.node.runtime_properties['backends']
+config['frontend_port'] = ctx.node.properties['port']
+config['default_backend'] = ctx.node.properties['default_backend']
+config['backends'] = ctx.instance.runtime_properties['backends']
 
-for client in config['backends']:
-    config[client]['address'] = ctx.node.runtime_properties[client]['address']
-    config[client]['port'] = ctx.node.runtime_properties[client]['port']
-    config[client]['maxconn'] = ctx.node.runtime_properties[client]['maxconn']
+for serv in config['backends']:
+    config[serv]['address'] = ctx.instance.runtime_properties[serv]['address']
+    config[serv]['port'] = ctx.instance.runtime_properties[serv]['port']
+    config[serv]['maxconn'] = ctx.instance.runtime_properties[serv]['maxconn']
 
 ctx.logger.debug('Rendering the Jinja2 template to {0}.'.format(CONFIG_PATH))
 

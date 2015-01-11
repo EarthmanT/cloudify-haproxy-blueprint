@@ -10,6 +10,10 @@ node_types:
   haproxy.nodes.Proxy:
     derived_from: cloudify.nodes.ApplicationServer
     properties:
+      use_existing_resource:
+        description: use an existing resource or not.
+        type: boolean
+        default: false
       port:
         description: The port for HAProxy to listen.
         type: integer
@@ -57,7 +61,7 @@ node_types:
         description: Sets the maximum per-process number of concurrent connections.
 
 relationships:
-  node_connected_to_frontend:
+  node_connected_to_backend:
     derived_from: cloudify.relationships.connected_to
     target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
@@ -67,10 +71,10 @@ relationships:
             backend_address:
               description: >
                 The internal address of the haproxy.nodes.backend template.
-              default: { get_attrbiute: [ SOURCE, ip ] }
+              default: { get_attrbiute: [ TARGET, ip ] }
             port:
               description: The port of that backend template.
-              default: { get_property: [ SOURCE, port ] }
+              default: { get_property: [ TARGET, port ] }
             maxconn:
               description: That backend template's maxconn value.
-              default: { get_property: [ SOURCE, maxconn ]}
+              default: { get_property: [ TARGET, maxconn ]}

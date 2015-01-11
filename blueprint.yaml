@@ -34,6 +34,8 @@ node_templates:
   haproxy_frontend_security_group:
     type: cloudify.openstack.nodes.SecurityGroup
     properties:
+      use_external_resource: true
+      resource_id: e5d15b22-757c-4f97-88e8-13d800e372e9
       security_group:
         name: haproxy_frontend_security_group
       rules:
@@ -67,10 +69,16 @@ node_templates:
     relationships:
       - target: vm_frontend
         type: cloudify.relationships.contained_in
+      - target: backend1
+        type: node_connected_to_backend
+      - target: backend2
+        type: node_connected_to_backend
 
   haproxy_backend_security_group:
     type: cloudify.openstack.nodes.SecurityGroup
     properties:
+      use_external_resource: true
+      resource_id: c788bb62-0f1b-468f-a22d-916132414759
       security_group:
         name: haproxy_backend_security_group
       rules:
@@ -97,8 +105,6 @@ node_templates:
     relationships:
       - target: vm_backend1
         type: cloudify.relationships.contained_in
-      - target: http_in
-        type: node_connected_to_frontend
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: hello-world/scripts/configure.sh
@@ -125,8 +131,6 @@ node_templates:
     relationships:
       - target: vm_backend2
         type: cloudify.relationships.contained_in
-      - target: http_in
-        type: node_connected_to_frontend
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: hello-world/scripts/configure.sh
