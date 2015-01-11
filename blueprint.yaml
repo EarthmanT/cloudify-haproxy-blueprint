@@ -100,6 +100,7 @@ node_templates:
   backend1:
     type: haproxy.nodes.BackEnd
     properties:
+      address: { get_attribute: [ vm_backend1, ip ] }
       port: { get_input: backend_app_port }
       maxconn: { get_input: backend_maxconn }
     relationships:
@@ -126,6 +127,7 @@ node_templates:
   backend2:
     type: haproxy.nodes.BackEnd
     properties:
+      address: { get_attribute: [ vm_backend2, ip ] }
       port: { get_input: backend_app_port }
       maxconn: { get_input: backend_maxconn }
     relationships:
