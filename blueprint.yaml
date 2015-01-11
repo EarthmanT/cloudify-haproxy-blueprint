@@ -64,6 +64,10 @@ node_templates:
     relationships:
       - target: vm_frontend
         type: cloudify.relationships.contained_in
+      - target: backend1
+        type: cloudify.relationships.depends_on
+      - target: backend2
+        type: cloudify.relationships.depends_on
 
   haproxy_backend_security_group:
     type: cloudify.openstack.nodes.SecurityGroup
@@ -94,7 +98,7 @@ node_templates:
       - target: vm_backend1
         type: cloudify.relationships.contained_in
       - target: http_in
-        type: node_connected_to_backend
+        type: node_connected_to_frontend
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: hello-world/scripts/configure.sh
@@ -111,7 +115,7 @@ node_templates:
         flavor_name: { get_input: backend_flavor_name }
     relationships:
       - type: cloudify.openstack.server_connected_to_security_group
-        target: haproxy_backend_security_group
+        target: node_connected_to_frontend
 
   backend2:
     type: haproxy.nodes.BackEnd
