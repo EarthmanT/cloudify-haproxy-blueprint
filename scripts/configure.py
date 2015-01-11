@@ -24,7 +24,7 @@ from cloudify.exceptions import NonRecoverableError
 
 # Constants
 CONFIG_PATH = '/etc/haproxy/haproxy.cfg'
-TEMPLATE_FOLDER = 'scripts/templates'
+TEMPLATE_FOLDER = '/tmp'
 TEMPLATE_FILE_NAME = 'haproxy.cfg.template'
 
 ctx.logger.debug('Pulling the config template into the temp directory.')
