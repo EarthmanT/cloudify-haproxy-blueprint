@@ -35,7 +35,7 @@ env = Environment(loader=FileSystemLoader(TEMPLATE_FOLDER))
 template = env.get_template(TEMPLATE_FILE_NAME)
 
 ctx.logger.info('Configuring HAProxy.')
-ctx.logger.debut('Building a dict object that will contain variables '
+ctx.logger.debug('Building a dict object that will contain variables '
                  'to write to the Jinja2 template.')
 
 config = dict()
@@ -44,25 +44,28 @@ config['mode'] = ctx.node.properties['mode']
 config['timeout_connect'] = ctx.node.properties['timeout_connect']
 config['timeout_client'] = ctx.node.properties['timeout_client']
 config['timeout_server'] = ctx.node.properties['timeout_server']
-config['frontend_id'] = ctx.instance.id
+config['frontend_id'] = ctx.node.name
 config['frontend_port'] = ctx.node.properties['port']
 config['default_backend'] = ctx.node.properties['default_backend']
 config['backends'] = ctx.instance.runtime_properties['backends']
 
-for serv in config['backends']:
-    config[serv]['address'] = ctx.instance.runtime_properties[serv]['address']
-    config[serv]['port'] = ctx.instance.runtime_properties[serv]['port']
-    config[serv]['maxconn'] = ctx.instance.runtime_properties[serv]['maxconn']
-
 ctx.logger.debug('Rendering the Jinja2 template to {0}.'.format(CONFIG_PATH))
+ctx.logger.info('The config dict: {0}.'.format(config))
 
-try:
-    with open(CONFIG_PATH, 'w') as file:
-        file.write(template.render(config))
-        file.close()
-except IOError:
-    raise NonRecoverableError(
-        'Permission denied: {0}.'.format(CONFIG_PATH))
+with open('/tmp/haproxy.cfg.tmp', 'w') as file:
+    file.write(template.render(config))
+    file.close()
+
+move_to_etc = subprocess.Popen(
+    ['sudo', 'mv', '/tmp/haproxy.cfg.tmp', CONFIG_PATH],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE)
+output = move_to_etc.communicate()
+
+if move_to_etc.returncode != 0:
+    raise NonRecoverableError('Failed to write to {0}.'.format(CONFIG_PATH))
+
+ctx.logger.debug('Write validation: {0}.'.format(output))
 
 test_config = subprocess.Popen(
     ['sudo', '/usr/sbin/haproxy', '-f', CONFIG_PATH, '-c'],
