@@ -23,6 +23,8 @@ inputs:
     default: ''
   backend_app_port:
     default: 80
+  backend_maxconn:
+    default: 32
 
 node_templates:
 
@@ -56,8 +58,9 @@ node_templates:
     type: haproxy.nodes.Proxy
     properties:
       default_backend: servers
-      maxconn: 256
+      global_maxconn: 256
       mode: http
+      port: 80
       timeout_connect: 5000
       timeout_client: 50000
       timeout_server: 50000
@@ -90,6 +93,7 @@ node_templates:
     type: haproxy.nodes.BackEnd
     properties:
       port: { get_input: backend_app_port }
+      maxconn: { get_input: backend_maxconn }
     relationships:
       - target: vm_backend1
         type: cloudify.relationships.contained_in
@@ -111,17 +115,18 @@ node_templates:
         flavor_name: { get_input: backend_flavor_name }
     relationships:
       - type: cloudify.openstack.server_connected_to_security_group
-        target: node_connected_to_frontend
+        target: haproxy_frontend_security_group
 
   backend2:
     type: haproxy.nodes.BackEnd
     properties:
       port: { get_input: backend_app_port }
+      maxconn: { get_input: backend_maxconn }
     relationships:
       - target: vm_backend2
         type: cloudify.relationships.contained_in
       - target: http_in
-        type: node_connected_to_backend
+        type: node_connected_to_frontend
     interfaces:
       cloudify.interfaces.lifecycle:
         configure: hello-world/scripts/configure.sh
