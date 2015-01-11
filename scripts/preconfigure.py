@@ -25,10 +25,20 @@ from cloudify.state import ctx_parameters as inputs
 ctx.logger.debug('Creating a configuration for Relationship: {0}.'.format(
     ctx.source.instance.id))
 
-ctx.source.instance.runtime_properties['backends'] = {
-    ctx.target.node.name: {
+name = ctx.target.node.name
+
+if 'backend_names' in ctx.source.instance.runtime_properties:
+    ctx.source.instance.runtime_properties['backend_names'].append(name)
+    ctx.source.instance.runtime_properties[name] = {
         'address': inputs['backend_address'],
         'port': str(inputs['port']),
         'maxconn': int(inputs['maxconn'])
     }
-}
+else:
+    ctx.source.instance.runtime_properties['backend_names'] = []
+    ctx.source.instance.runtime_properties['backend_names'].append(name)
+    ctx.source.instance.runtime_properties[name] = {
+        'address': inputs['backend_address'],
+        'port': str(inputs['port']),
+        'maxconn': int(inputs['maxconn'])
+    }
