@@ -26,7 +26,7 @@ ctx.logger.debug('Creating a configuration for Relationship: {0}.'.format(
     ctx.source.instance.id))
 
 ctx.source.instance.runtime_properties['backends'] = {
-    ctx.source.instance.id: {
+    ctx.target.node.name: {
         'address': inputs['backend_address'],
         'port': str(inputs['port']),
         'maxconn': int(inputs['maxconn'])
