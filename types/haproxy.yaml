@@ -54,6 +54,9 @@ node_types:
   haproxy.nodes.BackEnd:
     derived_from: cloudify.nodes.ApplicationServer
     properties:
+      address:
+        description: Use get_attribute to get the ip get_attribute
+          of the virtual machine that contains this node.
       port:
         description: The port your backend app listens on.
         type: integer
@@ -71,7 +74,7 @@ relationships:
             backend_address:
               description: >
                 The internal address of the haproxy.nodes.backend template.
-              default: { get_attrbiute: [ TARGET, ip ] }
+              default: { get_property: [ TARGET, address ] }
             port:
               description: The port of that backend template.
               default: { get_property: [ TARGET, port ] }
