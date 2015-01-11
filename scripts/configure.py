@@ -47,7 +47,11 @@ config['timeout_server'] = ctx.node.properties['timeout_server']
 config['frontend_id'] = ctx.node.name
 config['frontend_port'] = ctx.node.properties['port']
 config['default_backend'] = ctx.node.properties['default_backend']
-config['backends'] = ctx.instance.runtime_properties['backends']
+
+config['backends'] = {}
+
+for backend in ctx.instance.runtime_properties['backend_names']:
+    config['backends'][backend] = ctx.instance.runtime_properties[backend]
 
 ctx.logger.debug('Rendering the Jinja2 template to {0}.'.format(CONFIG_PATH))
 ctx.logger.info('The config dict: {0}.'.format(config))
