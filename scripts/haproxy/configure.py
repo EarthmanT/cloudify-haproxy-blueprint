@@ -16,6 +16,7 @@
 import subprocess
 
 # Third Party Imports
+# Jinja2 is already installed on agents
 from jinja2 import Environment, FileSystemLoader
 
 # Cloudify Imports
