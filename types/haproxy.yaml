@@ -46,10 +46,10 @@ node_types:
         default: 50000
     interfaces:
       cloudify.interfaces.lifecycle:
-        create: scripts/install-ubuntu.sh
-        configure: scripts/configure.py
-        start: scripts/start-ubuntu.sh
-        stop: scripts/stop-ubuntu.sh
+        create: scripts/haproxy/install-ubuntu.sh
+        configure: scripts/haproxy/configure.py
+        start: scripts/haproxy/start-ubuntu.sh
+        stop: scripts/haproxy/stop-ubuntu.sh
 
   haproxy.nodes.BackEnd:
     derived_from: cloudify.nodes.ApplicationServer
@@ -69,7 +69,7 @@ relationships:
     target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
-          implementation: scripts/preconfigure.py
+          implementation: scripts/haproxy/preconfigure.py
           inputs:
             backend_address:
               description: >

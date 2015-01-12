@@ -14,8 +14,8 @@ mkdir -p ${PYTHON_FILE_SERVER_ROOT}
 
 cd ${PYTHON_FILE_SERVER_ROOT}
 
-index_path="index.html"
-image_path="images/cloudify-logo.png"
+index_path="hello-world/index.html"
+image_path="hello-world/images/cloudify-logo.png"
 
 ctx logger info "Downloading blueprint resources..."
 ctx download-resource ${index_path} ${PYTHON_FILE_SERVER_ROOT}/index.html
