@@ -160,11 +160,6 @@ node_templates:
     relationships:
       - target: nodejs_host_backend_1
         type: cloudify.relationships.contained_in
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        configure: hello-world/scripts/configure.sh
-        start: hello-world/scripts/start.sh
-        stop: hello-world/scripts/stop.sh
 
   nodejs_2:
     type: nodecellar.nodes.NodeJSServer
@@ -199,11 +194,6 @@ node_templates:
     relationships:
       - target: nodejs_host_backend_2
         type: cloudify.relationships.contained_in
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        configure: hello-world/scripts/configure.sh
-        start: hello-world/scripts/start.sh
-        stop: hello-world/scripts/stop.sh
 
   mongod_host:
     type: nodecellar.nodes.MonitoredServer
