@@ -36,8 +36,8 @@ node_types:
           user: { get_input: agent_user }
       server:
         default:
-          image: { get_input: backend_image_name }
-          flavor: { get_input: backend_flavor_name }
+          image_name: { get_input: backend_image_name }
+          flavor_name: { get_input: backend_flavor_name }
     interfaces:
       cloudify.interfaces.monitoring_agent:
           install:
