@@ -69,13 +69,7 @@ node_templates:
     type: cloudify.openstack.nodes.FloatingIP
 
   haproxy_frontend_host:
-    type: cloudify.openstack.nodes.Server
-    properties:
-      cloudify_agent:
-        user: { get_input: agent_user }
-      server:
-        image_name: { get_input: frontend_image_name }
-        flavor_name: { get_input: frontend_flavor_name }
+    type: nodecellar.nodes.MonitoredServer
     relationships:
       - type: cloudify.openstack.server_connected_to_floating_ip
         target: frontend_floatingip
