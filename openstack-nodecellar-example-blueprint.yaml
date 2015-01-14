@@ -113,7 +113,7 @@ node_templates:
                   HAProxyCollector:
                     config:
                       enabled: True
-                      url: http://localhost:9000//haproxy_stats;csv
+                      url: http://127.0.0.1:9000/haproxy_stats;csv
 
   nodecellar_security_group:
     type: cloudify.openstack.nodes.SecurityGroup
