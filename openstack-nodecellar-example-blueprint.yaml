@@ -75,17 +75,6 @@ node_templates:
         target: frontend_floatingip
       - type: cloudify.openstack.server_connected_to_security_group
         target: haproxy_frontend_security_group
-    interfaces:
-      cloudify.interfaces.monitoring_agent:
-        install:
-          implementation: diamond.diamond_agent.tasks.install
-          inputs:
-            diamond_config:
-              interval: 10
-        start: diamond.diamond_agent.tasks.start
-        stop: diamond.diamond_agent.tasks.stop
-        uninstall: diamond.diamond_agent.tasks.uninstall
-
 
   haproxy_frontend_security_group:
     type: cloudify.openstack.nodes.SecurityGroup
@@ -116,29 +105,11 @@ node_templates:
       - target: backend2
         type: node_connected_to_backend
     interfaces:
-      cloudify.interfaces.monitoring_agent:
-          install:
-            implementation: diamond.diamond_agent.tasks.install
-            inputs:
-              diamond_config:
-                default:
-                  interval: 1
-          start: diamond.diamond_agent.tasks.start
-          stop: diamond.diamond_agent.tasks.stop
-          uninstall: diamond.diamond_agent.tasks.uninstall
       cloudify.interfaces.monitoring:
           start:
             implementation: diamond.diamond_agent.tasks.add_collectors
             inputs:
               collectors_config:
-                default:
-                  CPUCollector: {}
-                  MemoryCollector: {}
-                  LoadAverageCollector: {}
-                  DiskUsageCollector:
-                    config:
-                      devices: x?vd[a-z]+[0-9]*$
-                  NetworkCollector: {}
                   HAProxyCollector:
                     config:
                       enabled: True
