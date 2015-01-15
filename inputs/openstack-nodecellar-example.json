@@ -5,6 +5,5 @@
     "frontend_flavor_name": "standard.small",
     "backend_image_name": "Ubuntu Server 12.04.2 LTS (amd64 20130318) - Partner Image",
     "backend_flavor_name": "standard.xsmall",
-    "backend_app_port": 8000,
-    "backend_maxconn": 32
+    "backend_app_port": 8000
 }
