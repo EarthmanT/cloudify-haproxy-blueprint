@@ -25,7 +25,7 @@ from cloudify.state import ctx_parameters as inputs
 ctx.logger.debug('Creating a configuration for Relationship: {0}.'.format(
     ctx.source.instance.id))
 
-name = ctx.target.node.name
+name = ctx.target.instance.id
 
 if 'backend_names' in ctx.source.instance.runtime_properties:
     ctx.source.instance.runtime_properties['backend_names'].append(name)
