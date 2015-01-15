@@ -23,8 +23,6 @@ inputs:
     default: ''
   backend_app_port:
     default: 80
-  backend_maxconn:
-    default: 32
 
 node_types:
 
@@ -68,14 +66,6 @@ node_templates:
   frontend_floatingip:
     type: cloudify.openstack.nodes.FloatingIP
 
-  haproxy_frontend_host:
-    type: nodecellar.nodes.MonitoredServer
-    relationships:
-      - type: cloudify.openstack.server_connected_to_floating_ip
-        target: frontend_floatingip
-      - type: cloudify.openstack.server_connected_to_security_group
-        target: haproxy_frontend_security_group
-
   haproxy_frontend_security_group:
     type: cloudify.openstack.nodes.SecurityGroup
     properties:
@@ -86,6 +76,14 @@ node_templates:
           port: { get_property: [ http_in, port ] }
         - remote_ip_prefix: 0.0.0.0/0
           port: 9000
+
+  haproxy_frontend_host:
+    type: nodecellar.nodes.MonitoredServer
+    relationships:
+      - type: cloudify.openstack.server_connected_to_floating_ip
+        target: frontend_floatingip
+      - type: cloudify.openstack.server_connected_to_security_group
+        target: haproxy_frontend_security_group
 
   http_in:
     type: haproxy.nodes.Proxy
@@ -100,10 +98,8 @@ node_templates:
     relationships:
       - target: haproxy_frontend_host
         type: cloudify.relationships.contained_in
-      - target: backend1
-        type: node_connected_to_backend
-      - target: backend2
-        type: node_connected_to_backend
+      - target: nodejs_host
+        type: haproxy_connected_to_vm
     interfaces:
       cloudify.interfaces.monitoring:
           start:
@@ -122,24 +118,23 @@ node_templates:
         name: nodecellar_security_group
       rules:
         - remote_ip_prefix: 0.0.0.0/0
-          port: { get_input: backend_app_port }
+          port: { get_property: [ nodecellar, port ] }
 
-  haproxy_backend_security_group:
-    type: cloudify.openstack.nodes.SecurityGroup
-    properties:
-      security_group:
-        name: haproxy_nodecellar_example_backend_security_group
-      rules:
-        - remote_ip_prefix: 0.0.0.0/0
-          port: { get_input: backend_app_port }
+  nodejs_host:
+    type: nodecellar.nodes.MonitoredServer
+    instances:
+      deploy: 3
+    relationships:
+      - target: nodecellar_security_group
+        type: cloudify.openstack.server_connected_to_security_group
 
-  nodejs_1:
+  nodejs:
     type: nodecellar.nodes.NodeJSServer
     relationships:
       - type: cloudify.relationships.contained_in
-        target: nodejs_host_backend_1
+        target: nodejs_host
 
-  nodecellar_1:
+  nodecellar:
     type: nodecellar.nodes.NodecellarApplicationModule
     properties:
       port: { get_input: backend_app_port }
@@ -147,65 +142,11 @@ node_templates:
       - type: node_connected_to_mongo
         target: mongod
       - type: node_contained_in_nodejs
-        target: nodejs_1
-
-  nodejs_host_backend_1:
-    type: nodecellar.nodes.MonitoredServer
-    relationships:
-      - target: nodecellar_security_group
-        type: cloudify.openstack.server_connected_to_security_group
-      - target: haproxy_backend_security_group
-        type: cloudify.openstack.server_connected_to_security_group
-
-  backend1:
-    type: haproxy.nodes.BackEnd
-    properties:
-      address: { get_attribute: [ nodejs_host_backend_1, ip ] }
-      port: { get_input: backend_app_port }
-      maxconn: { get_input: backend_maxconn }
-    relationships:
-      - target: nodejs_host_backend_1
-        type: cloudify.relationships.contained_in
-
-  nodejs_2:
-    type: nodecellar.nodes.NodeJSServer
-    relationships:
-      - type: cloudify.relationships.contained_in
-        target: nodejs_host_backend_2
-
-  nodecellar_2:
-    type: nodecellar.nodes.NodecellarApplicationModule
-    properties:
-      port: { get_input: backend_app_port }
-    relationships:
-      - type: node_connected_to_mongo
-        target: mongod
-      - type: node_contained_in_nodejs
-        target: nodejs_2
-
-  nodejs_host_backend_2:
-    type: nodecellar.nodes.MonitoredServer
-    relationships:
-      - target: nodecellar_security_group
-        type: cloudify.openstack.server_connected_to_security_group
-      - target: haproxy_backend_security_group
-        type: cloudify.openstack.server_connected_to_security_group
-
-  backend2:
-    type: haproxy.nodes.BackEnd
-    properties:
-      address: { get_attribute: [ nodejs_host_backend_2, ip ] }
-      port: { get_input: backend_app_port }
-      maxconn: { get_input: backend_maxconn }
-    relationships:
-      - target: nodejs_host_backend_2
-        type: cloudify.relationships.contained_in
+        target: nodejs
 
   mongod_host:
     type: nodecellar.nodes.MonitoredServer
     relationships:
-      - type: cloudify.openstack.server_connected_to_security_group
-        target: haproxy_backend_security_group
       - target: mongod_security_group
         type: cloudify.openstack.server_connected_to_security_group
 
