@@ -18,9 +18,6 @@ node_types:
         description: The port for HAProxy to listen.
         type: integer
         default: 80
-      default_backend:
-        description: >
-          The group name you choose for your backend targets.
       global_maxconn:
         description: Max number of connections at a time.
         type: integer
@@ -44,6 +41,18 @@ node_types:
         description: Set the maximum inactivity time on the server side.
         type: integer
         default: 50000
+      default_backend:
+        description: >
+          The group name you choose for your backend targets.
+      backend_app_port:
+        description: >
+          The port that your application listens on.
+        type: integer
+        default: 8000
+      backend_max_conn:
+        description: >
+          The backend max connectons.
+        default: 32
     interfaces:
       cloudify.interfaces.lifecycle:
         create: scripts/haproxy/install-ubuntu.sh
@@ -51,33 +60,24 @@ node_types:
         start: scripts/haproxy/start-ubuntu.sh
         stop: scripts/haproxy/stop-ubuntu.sh
 
-  haproxy.nodes.BackEnd:
-    derived_from: cloudify.nodes.ApplicationServer
-    properties:
-      address:
-        description: Use get_attribute to get the ip get_attribute
-          of the virtual machine that contains this node.
-      port:
-        description: The port your backend app listens on.
-        type: integer
-      maxconn:
-        description: Sets the maximum per-process number of concurrent connections.
-
 relationships:
-  node_connected_to_backend:
+  haproxy_connected_to_vm:
     derived_from: cloudify.relationships.connected_to
-    target_interfaces:
+    source_interfaces:
       cloudify.interfaces.relationship_lifecycle:
         preconfigure:
           implementation: scripts/haproxy/preconfigure.py
           inputs:
             backend_address:
               description: >
-                The internal address of the haproxy.nodes.backend template.
-              default: { get_property: [ TARGET, address ] }
+                The internal address of a virtual machine node
+                that contains your application.
+              default: { get_attribute: [ TARGET, ip ] }
             port:
-              description: The port of that backend template.
-              default: { get_property: [ TARGET, port ] }
+              description: >
+                The port on your virtual machine
+                that listens for connections to your application.
+              default: { get_property: [ SOURCE, backend_app_port ] }
             maxconn:
-              description: That backend template's maxconn value.
-              default: { get_property: [ TARGET, maxconn ]}
+              description: That backend's maxconn value.
+              default: { get_property: [ SOURCE, backend_max_conn ] }
