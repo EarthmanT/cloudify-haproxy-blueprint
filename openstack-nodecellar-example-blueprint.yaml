@@ -4,11 +4,13 @@ imports:
   - http://www.getcloudify.org/spec/cloudify/3.2m2/types.yaml
   - http://www.getcloudify.org/spec/openstack-plugin/1.2m2/plugin.yaml
   - http://www.getcloudify.org/spec/diamond-plugin/1.2m2/plugin.yaml
+  - https://github.com/cloudify-cosmo/cloudify-nodecellar-example/blob/master/types/nodecellar.yaml
   - types/haproxy.yaml
-  - types/nodecellar.yaml
 
 inputs:
 
+  backend_servers_count:
+    default: 2
   agent_user:
     default: ''
   agent_public_key_name:
@@ -123,7 +125,7 @@ node_templates:
   nodejs_host:
     type: nodecellar.nodes.MonitoredServer
     instances:
-      deploy: 2
+      deploy: { get_input: backend_servers_count }
     relationships:
       - target: nodecellar_security_group
         type: cloudify.openstack.server_connected_to_security_group

@@ -1,5 +1,6 @@
 {
     "agent_public_key_name": "trammell-agent-kp",
+    "backend_servers_count": 2,
     "agent_user": "ubuntu",
     "frontend_image_name": "Ubuntu Server 12.04.2 LTS (amd64 20130318) - Partner Image",
     "frontend_flavor_name": "standard.small",
