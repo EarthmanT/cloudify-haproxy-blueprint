@@ -3,7 +3,7 @@ A Cloudify blueprint for HAProxy
 
 There is a types file in types/haproxy.yaml that describes the haproxy types that you can instantiate in your blueprints. You can refer import it to your own blueprints using this URL: https://raw.githubusercontent.com/EarthmanT/cloudify-haproxy-blueprint/master/types/haproxy.yaml.
 
-There is an example blueprint file that installs the nodecellar example application on openstack: openstack-nodecellar-example-blueprint.yaml. There is an example inputs.json in the inputs folder.
+There is an example blueprint file that installs the nodecellar example application on openstack: openstack-nodecellar-example-blueprint.yaml.
 
 There are install, configure, start, and stop scripts in the scripts folder. It also includes the nodecellar example's scripts.
 
