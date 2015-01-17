@@ -13,6 +13,7 @@
 ###############################################################################
 
 # Builtin Imports
+import os
 import subprocess
 
 # Third Party Imports
@@ -28,6 +29,7 @@ CONFIG_PATH = '/etc/haproxy/haproxy.cfg'
 TEMPLATE_FOLDER = '/tmp'
 TEMPLATE_FILE_NAME = 'haproxy.cfg.template'
 
+ctx.logger.info('Configuring HAProxy.')
 ctx.logger.debug('Pulling the config template into the temp directory.')
 ctx.download_resource('haproxy.cfg.template',
                       **{'target_path': '/tmp/haproxy.cfg.template'})
@@ -35,7 +37,6 @@ ctx.download_resource('haproxy.cfg.template',
 env = Environment(loader=FileSystemLoader(TEMPLATE_FOLDER))
 template = env.get_template(TEMPLATE_FILE_NAME)
 
-ctx.logger.info('Configuring HAProxy.')
 ctx.logger.debug('Building a dict object that will contain variables '
                  'to write to the Jinja2 template.')
 
@@ -55,14 +56,16 @@ for backend in ctx.instance.runtime_properties['backend_names']:
     config['backends'][backend] = ctx.instance.runtime_properties[backend]
 
 ctx.logger.debug('Rendering the Jinja2 template to {0}.'.format(CONFIG_PATH))
-ctx.logger.info('The config dict: {0}.'.format(config))
+ctx.logger.debug('The config dict: {0}.'.format(config))
 
-with open('/tmp/haproxy.cfg.tmp', 'w') as file:
+TEMP_PATH = os.path.join(TEMPLATE_FOLDER, TEMPLATE_FILE_NAME)
+
+with open(TEMP_PATH, 'w') as file:
     file.write(template.render(config))
     file.close()
 
 move_to_etc = subprocess.Popen(
-    ['sudo', 'mv', '/tmp/haproxy.cfg.tmp', CONFIG_PATH],
+    ['sudo', 'mv', TEMP_PATH, CONFIG_PATH],
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE)
 output = move_to_etc.communicate()
