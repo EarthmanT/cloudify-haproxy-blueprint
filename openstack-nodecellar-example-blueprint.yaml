@@ -8,17 +8,9 @@ imports:
 
 inputs:
 
-  backend_servers_count:
-    type: integer
-    default: 2
-
   agent_user:
     type: string
     default: ubuntu
-
-  agent_public_key_name:
-    type: string
-    default: agent-key-31
 
   frontend_image_name:
     type: string
