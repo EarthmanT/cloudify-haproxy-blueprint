@@ -1,0 +1,10 @@
+{
+    "backend_servers_count": 2,
+    "agent_user": "ubuntu",
+    "agent_public_key_name": "agent-key-31",
+    "frontend_image_name": "Ubuntu Server 12.04.5 LTS (amd64 20140927) - Partner Image",
+    "frontend_flavor_name": "standard.medium",
+    "backend_image_name": "Ubuntu Server 12.04.5 LTS (amd64 20140927) - Partner Image",
+    "backend_flavor_name": "standard.medium",
+    "backend_app_port": 80
+}
