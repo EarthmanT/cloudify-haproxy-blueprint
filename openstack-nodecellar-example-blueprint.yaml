@@ -139,7 +139,7 @@ node_templates:
   nodejs_host:
     type: nodecellar.nodes.MonitoredServer
     instances:
-      deploy: { get_input: backend_servers_count }
+      deploy: 2
     relationships:
       - target: nodecellar_security_group
         type: cloudify.openstack.server_connected_to_security_group
